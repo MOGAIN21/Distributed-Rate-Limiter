@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package ratelimiter;
+
+option go_package= "github.com/MKR-24/distributed-rate-limiter/proto";
+
+service RateLimiter{
+    rpc CheckLimit(CheckLimitRequest) returns (CheckLimitResponse);
+    rpc GetStatus(GetStatusRequest) returns (GetStatusResponse);
+}
+//Asks if client can consume tokens
+message CheckLimitRequest{
+    string client_id = 1;
+    int32 tokens_requested =2; // Default=1
+}
+
+//Tells if request is allowed
+message CheckLimitResponse{
+    bool allowed = 1;
+    int32 remaining_tokens= 2;
+    int64 retry_after_ms = 3; //Time in ms to wait before retry(if rejected)
+    string message = 4;
+}
+
+message GetStatusRequest{
+    string client_id = 1;
+}
+
+//returns rate limiter state
+message GetStatusResponse{
+    int32 remaining_tokens = 1;
+    int32 capacity = 2; //Bucket Capacity
+    double refill_rate = 3;
+    int64 next_refill_ms = 4;
+}
+
