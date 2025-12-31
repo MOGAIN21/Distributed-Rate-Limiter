@@ -1,0 +1,13 @@
+server:
+  port: 50051
+  host: "0.0.0.0"
+
+ratelimiter:
+  default_capacity: 100
+  default_refill_rate: 1.67
+
+redis:
+  enabled: false
+  host: "localhost"
+  porrt: 6379
+  

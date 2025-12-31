@@ -1,4 +1,4 @@
-.PHONY:	proto	clean	build	run-server	run-client	test
+.PHONY:	proto	clean	build	run-server	run-client	test	deps	fmt
 
 # Generating the protobuf code
 proto:
@@ -10,13 +10,15 @@ proto:
 # Cleaning up generated files
 clean:
 	rm -f proto/*.pb.go
+	rm -rf bin/
 	@echo "Cleaned up generated files."
 
 # Building the server and client binaries
 build:
+	mkdir -p bin
 	go build -o bin/server cmd/server/main.go
 	go build -o bin/client cmd/client/main.go
-	@echo "Built server and client."
+	@echo "Built server and client in bin."
 
 # Running the server
 run-server:
@@ -24,11 +26,21 @@ run-server:
 
 # Running the client
 run-client:
-	go run cmd/client/main.go
+	go run cmd/client/main.go	-requests 10
+
+# Run client with custom number of requests
+client-test:
+	go run cmd/client/main.go -client	user-123 -requests 150	-interval 50ms
 
 # Running tests
 test:
 	go test -v	./...
+
+#Run test with coverage
+test-coverage:
+	go test -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out	-o coverage.html
+	@echo "Test coverage report generated in coverage.html."
 
 #Installing the necessary dependencies
 deps:
@@ -40,3 +52,18 @@ deps:
 fmt:
 	go fmt ./...
 	@echo "Code formatted."
+
+#Run linter
+lint:
+	golangci-lint run
+
+#Help command
+help:
+	@echo "Available commands:"
+	@echo "  make proto          - Generate protobuf code"
+	@echo "  make clean          - Clean up generated files"
+	@echo "  make build          - Build server and client binaries"
+	@echo "  make run-server     - Run the server"
+	@echo "  make run-client     - Run the client"
+	@echo "  make client-test    - Run client with custom number of requests"
+	@echo "  make test           - Run tests"
