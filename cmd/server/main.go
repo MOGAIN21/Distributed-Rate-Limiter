@@ -18,10 +18,17 @@ import (
 	"github.com/MKR-24/distributed-rate-limiter/internal/ratelimiter"
 )
 
+//RateLimiterService defines the interface for both in-memory and Redis backed rate limiters
+type RateLimiterService interface {
+	CheckLimit(clientID string, tokensRequested int32) (bool, int32, int64)
+	GetStatus(clientID string) (int32, int32, float64)
+	GetClientCount() int
+}
+
 // server is used to implement the RateLimiter grpc Service
 type server struct {
 	pb.UnimplementedRateLimiterServer
-	manager *ratelimiter.Manager
+	limiter RateLimiterService
 }
 
 func (s *server) CheckLimit(ctx context.Context, req *pb.CheckLimitRequest) (*pb.CheckLimitResponse, error) {
@@ -36,7 +43,7 @@ func (s *server) CheckLimit(ctx context.Context, req *pb.CheckLimitRequest) (*pb
 	}
 
 	// Check rate limit
-	allowed, remaining, retryAfterMs := s.manager.CheckLimit(req.ClientId, tokensRequested)
+	allowed, remaining, retryAfterMs := s.limiter.CheckLimit(req.ClientId, tokensRequested)
 
 	response := &pb.CheckLimitResponse{
 		Allowed:      allowed,
@@ -49,6 +56,9 @@ func (s *server) CheckLimit(ctx context.Context, req *pb.CheckLimitRequest) (*pb
 	} else {
 		response.Message = fmt.Sprintf("Rate limit exceeded. Try again in %d ms.", retryAfterMs)
 	}
+	log.Printf("[CheckLimit] client=%s, tokens=%d, allowed=%v, remaining=%d",
+		req.ClientId, tokensRequested, allowed, remaining)
+
 	return response, nil
 }
 
@@ -56,7 +66,7 @@ func (s *server) GetStatus(ctx context.Context, req *pb.GetStatusRequest) (*pb.G
 	if req.ClientId == "" {
 		return nil, status.Error(codes.InvalidArgument, "ClientId is required")
 	}
-	remaining, capacity , refillRate := s.manager.GetStatus(req.ClientId)
+	remaining, capacity , refillRate := s.limiter.GetStatus(req.ClientId)
 
 	response := &pb.GetStatusResponse{
 		RemainingTokens: remaining,
@@ -80,12 +90,30 @@ func main() {
 		config.RateLimiter.DefaultCapacity,
 		config.RateLimiter.DefaultRefillRate,
 	)
-	manager := ratelimiter.NewManager(rlConfig)
+	var limiter RateLimiterService
+	var redisManager *ratelimiter.RedisManager
+
+	if config.Redis.Enabled {
+		redisAddr := fmt.Sprintf("%s:%d", config.Redis.Host, config.Redis.Port)
+		redisManager, err = ratelimiter.NewRedisManager(rlConfig, redisAddr,"", 0)
+		if err != nil {
+			log.Printf("Failed to connect to Redis: %v", err)
+			log.Println("Falling back to in-memory rate limiter")
+			limiter = ratelimiter.NewManager(rlConfig)
+		} else{
+			log.Printf("Using Redis-backed rate limiter")
+			limiter = redisManager
+			defer redisManager.Close()
+		}
+	} else {
+		log.Printf("Using in-memory rate limiter")
+		limiter = ratelimiter.NewManager(rlConfig)
+	}
 
 	// Set up gRPC server
 	grpcServer := grpc.NewServer()
-	pb.RegisterRateLimiterServer(grpcServer, &server{manager: manager,})
-	// Enable reflection for debugging
+	pb.RegisterRateLimiterServer(grpcServer, &server{limiter: limiter})
+	// Enable reflection for debugging with grpcurl
 	reflection.Register(grpcServer)
 
 	// Listen on specified host and port

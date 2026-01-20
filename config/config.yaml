@@ -7,7 +7,7 @@ ratelimiter:
   default_refill_rate: 1.67
 
 redis:
-  enabled: false
+  enabled: true
   host: "localhost"
-  porrt: 6379
+  port: 6379
   
