@@ -1,0 +1,27 @@
+#Binaries
+bin/
+*.exe
+*.out
+
+#Git
+.git/
+.gitignore
+
+#IDE
+.vscode/
+.idea/
+
+#Documentation
+*.md
+!README.md
+
+#Test files
+*_test.go
+
+#Build artifacts
+coverage.out
+coverage.html
+
+#OS files
+.DS_Store
+Thumbs.db

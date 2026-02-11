@@ -3,6 +3,7 @@ package ratelimiter
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"gopkg.in/yaml.v3"
 )
 
@@ -31,6 +32,19 @@ func LoadConfig(filename string) (*AppConfig, error) {
 	var config AppConfig
 	if err := yaml.Unmarshal(data, &config); err != nil {
 		return nil, fmt.Errorf("failed to parse config file: %w", err)
+	}
+
+	//Override with environment variables if set
+	if host := os.Getenv("REDIS_HOST"); host != "" {
+		config.Redis.Host = host
+	}
+	if port := os.Getenv("REDIS_PORT"); port != "" {
+		if portInt, err := strconv.Atoi(port); err == nil {
+			config.Redis.Port = portInt
+		}
+	}
+	if enabled := os.Getenv("REDIS_ENABLED"); enabled != "" {
+		config.Redis.Enabled = enabled == "true"
 	}
 	return &config, nil
 }

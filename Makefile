@@ -67,3 +67,30 @@ help:
 	@echo "  make run-client     - Run the client"
 	@echo "  make client-test    - Run client with custom number of requests"
 	@echo "  make test           - Run tests"
+
+#Docker commands
+.PHONY:	docker-build	docker-up	docker-down	docker-logs	docker-clean
+
+docker-build:
+	docker-compose build
+	@echo "Docker images built."
+
+docker-up:
+	docker-compose up -d
+	@echo "Docker containers started."
+
+docker-down:
+	docker-compose down
+	@echo "Docker containers stopped."
+
+docker-logs:
+	docker-compose logs -f
+
+docker-clean:
+	docker-compose down -v
+	docker system prune -f
+	@echo "Docker containers and volumes cleaned."
+
+docker-restart:
+	docker-compose restart
+	@echo "Docker containers restarted."

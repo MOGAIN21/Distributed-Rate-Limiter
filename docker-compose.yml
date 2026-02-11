@@ -1,0 +1,50 @@
+services:
+  #Redis service
+  redis:
+    image: redis:7-alpine
+    container_name: ratelimiter-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      ratelimiter-network:
+        aliases:
+          - redis
+      
+  #Rate Limiter service
+  ratelimiter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ratelimiter-server
+    ports:
+      - "50051:50051"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_ENABLED=true
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+        - ratelimiter-network
+    restart: unless-stopped
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+
+volumes:
+  redis-data:
+     driver: local
+networks:
+  ratelimiter-network:
+    driver: bridge
+
+
