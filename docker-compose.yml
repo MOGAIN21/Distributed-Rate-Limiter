@@ -15,8 +15,8 @@ services:
       retries: 5
     networks:
       ratelimiter-network:
-        aliases:
-          - redis
+        ipv4_address: 172.25.0.10
+        
       
   #Rate Limiter service
   ratelimiter:
@@ -25,9 +25,10 @@ services:
       dockerfile: Dockerfile
     container_name: ratelimiter-server
     ports:
-      - "50051:50051"
+      - "50051:50051" #grpc
+      - "8080:8080" #metrics
     environment:
-      - REDIS_HOST=redis
+      - REDIS_HOST=172.25.0.10
       - REDIS_PORT=6379
       - REDIS_ENABLED=true
     depends_on:
@@ -39,12 +40,51 @@ services:
     dns:
       - 8.8.8.8
       - 8.8.4.4
+    
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ratelimiter-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - ratelimiter-network
+    depends_on:
+      - ratelimiter
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ratelimiter-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+    networks:
+      - ratelimiter-network
+    depends_on:
+      - prometheus
 
 volumes:
   redis-data:
-     driver: local
+  prometheus-data:
+  grafana-data:
 networks:
   ratelimiter-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
 
 

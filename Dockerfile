@@ -25,6 +25,6 @@ COPY --from=builder /bin/server .
 
 COPY config/config.yaml config/
 
-EXPOSE 50051
+EXPOSE 50051    8080
 
 CMD ["./server"]

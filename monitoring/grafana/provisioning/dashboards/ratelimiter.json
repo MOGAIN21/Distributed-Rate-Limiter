@@ -1,0 +1,58 @@
+{
+    "dashboard":{
+        "title":"Rate Limiter Dashboard",
+        "panels":[
+            {
+                "id":1,
+                "title":"Rate Limit Requests per Second",
+                "type":"graph",
+                "gridPos":{"h":8,"w":12,"x":0,"y":0},
+                "targets":[
+                    {
+                        "expr": "rate(rate_limiter_requests_total[1m])",
+                        "legendFormat": "{{client_id}} - {{allowed}}"
+                }
+             ]
+    } ,
+    {
+        "id":2,
+        "title":"Rate Limit Hits",
+        "type":"stat",
+        "gridPos":{"h":4,"w":6,"x":12,"y":0},
+        "targets":[
+            {
+                "expr": "ratelimiter_rate_limit_hits_total"
+            }
+        ]
+    },
+    {
+        "id":3,
+        "title":"Active Clients",
+        "type":"stat",
+        "gridPos":{"h":4,"w":6,"x":18,"y":0},
+        "targets":[
+            {
+                "expr": "ratelimiter_active_clients"
+            }
+         ]
+    },
+    {
+        "id":4,
+        "title": "Request Duration (p95)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+        "targets": [
+            {
+                "expr": "histogram_quantile(0.95, sum(rate(ratelimiter_request_duration_seconds_bucket[5m]))",
+                "legendFormat": "{{method}}"
+            }
+        ]
+    }
+    ],
+    "refresh": "5s",
+    "time": {
+        "from": "now-15m",
+        "to": "now"
+        }
+    }
+}

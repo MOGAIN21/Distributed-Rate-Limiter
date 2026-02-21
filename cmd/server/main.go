@@ -5,9 +5,13 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -15,6 +19,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	pb "github.com/MKR-24/distributed-rate-limiter/proto"
+	"github.com/MKR-24/distributed-rate-limiter/internal/metrics"
 	"github.com/MKR-24/distributed-rate-limiter/internal/ratelimiter"
 )
 
@@ -32,6 +37,12 @@ type server struct {
 }
 
 func (s *server) CheckLimit(ctx context.Context, req *pb.CheckLimitRequest) (*pb.CheckLimitResponse, error) {
+	start := time.Now()
+	defer func() {
+		duration := time.Since(start).Seconds()
+		metrics.RequestDuration.WithLabelValues("CheckLimit").Observe(duration)
+	}()
+
 	// Validate request
 	if req.ClientId == "" {
 		return nil, status.Error(codes.InvalidArgument, "ClientId is required")
@@ -45,6 +56,14 @@ func (s *server) CheckLimit(ctx context.Context, req *pb.CheckLimitRequest) (*pb
 	// Check rate limit
 	allowed, remaining, retryAfterMs := s.limiter.CheckLimit(req.ClientId, tokensRequested)
 
+	//Record metrics
+	if !allowed {
+		metrics.RateLimitHitsTotal.Inc()
+	}
+
+	metrics.RequestTotal.WithLabelValues(req.ClientId, fmt.Sprintf("%t", allowed)).Inc()
+	metrics.TokenBucketSize.WithLabelValues(req.ClientId).Set(float64(remaining))
+	
 	response := &pb.CheckLimitResponse{
 		Allowed:      allowed,
 		RemainingTokens: remaining,
@@ -63,6 +82,12 @@ func (s *server) CheckLimit(ctx context.Context, req *pb.CheckLimitRequest) (*pb
 }
 
 func (s *server) GetStatus(ctx context.Context, req *pb.GetStatusRequest) (*pb.GetStatusResponse, error) {
+	start := time.Now()
+	defer func() {
+		duration := time.Since(start).Seconds()
+		metrics.RequestDuration.WithLabelValues("GetStatus").Observe(duration)
+	}()
+	
 	if req.ClientId == "" {
 		return nil, status.Error(codes.InvalidArgument, "ClientId is required")
 	}
@@ -109,6 +134,32 @@ func main() {
 		log.Printf("Using in-memory rate limiter")
 		limiter = ratelimiter.NewManager(rlConfig)
 	}
+
+	// Start Prometheus metrics server
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("OK"))
+		})
+		metricsAddr := ":8080"
+		log.Printf("Starting metrics server on %s", metricsAddr)
+		log.Printf("  -Metrics Endpoint: http://localhost%s/metrics", metricsAddr)
+		log.Printf("  -Health Endpoint: http://localhost%s/health", metricsAddr)
+		if err := http.ListenAndServe(metricsAddr, nil); err != nil {
+			log.Fatalf("Failed to start metrics server: %v", err)
+		}
+	}()
+
+	//Update active clients gauge every minute
+	go func() {
+		ticker := time.NewTicker(1 * time.Minute)
+		defer ticker.Stop()
+		for range ticker.C {
+			clientCount := limiter.GetClientCount()
+			metrics.ActiveClients.Set(float64(clientCount))
+		}
+	}()
 
 	// Set up gRPC server
 	grpcServer := grpc.NewServer()
