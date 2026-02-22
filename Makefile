@@ -94,3 +94,80 @@ docker-clean:
 docker-restart:
 	docker-compose restart
 	@echo "Docker containers restarted."
+
+#Monitoring commands
+.PHONY:	monnitoring-up	monitoring-down	grafana	prometheus	metrics
+
+monitoring-up:
+	docker-compose  up -d	prometheus grafana
+	@echo "Monitoring stack started."
+	@echo "Access Grafana at http://localhost:3000 (default credentials: admin/admin)."
+	@echo "Access Prometheus at http://localhost:9090."
+
+monitoring-down:
+	docker-compose stop prometheus grafana
+
+grafana:
+	@echo "Opening Grafana dashboard..."
+	@(open http://localhost:3000 || xdg-open http://localhost:3000 || echo "Open http://localhost:3000 in your browser")	2>/dev/null
+
+prometheus:
+	@echo "Opening Prometheus..."
+	@(open http://localhost:9090 || xdg-open http://localhost:9090 || echo "Open http://localhost:9090 in your browser")	2>/dev/null
+
+metrics:
+	@echo "Fetching metrics..."
+	@curl -s http://localhost:8080/metrics | grep	rate_limiter	| grep -v	"^#"
+
+#Load testing commands
+.PHONY:	load-test-light	load-test-medium	load-test-heavy	load-test-stress	load-test-all
+
+load-test-light:
+	@./scripts/load-tests/light-load.sh
+
+load-test-medium:
+	@./scripts/load-tests/medium-load.sh
+
+load-test-heavy:
+	@./scripts/load-tests/heavy-load.sh
+
+load-test-stress:
+	@./scripts/load-tests/stress-test.sh
+
+load-test-all:
+	@./scripts/run.sh
+
+#Help
+.PHONY:	help
+help:
+	@echo "Available commands:"
+	@echo ""
+	@echo "Build & Run:"
+	@echo "  make build           - Build server and client binaries"
+	@echo "  make run-server      - Run the server locally"
+	@echo "  make run-client      - Run test client"
+	@echo "  make proto           - Generate protobuf code"
+	@echo ""
+	@echo "Docker:"
+	@echo "  make docker-build    - Build Docker images"
+	@echo "  make docker-up       - Start all services"
+	@echo "  make docker-down     - Stop all services"
+	@echo "  make docker-logs     - View logs"
+	@echo "  make docker-clean    - Clean Docker resources"
+	@echo ""
+	@echo "Monitoring:"
+	@echo "  make grafana         - Open Grafana dashboard"
+	@echo "  make prometheus      - Open Prometheus"
+	@echo "  make metrics         - View current metrics"
+	@echo ""
+	@echo "Load Testing:"
+	@echo "  make load-test-light - Run light load test"
+	@echo "  make load-test-medium- Run medium load test"
+	@echo "  make load-test-heavy - Run heavy load test"
+	@echo "  make load-test-all   - Run all tests"
+	@echo ""
+	@echo "Other:"
+	@echo "  make test            - Run unit tests"
+	@echo "  make fmt             - Format code"
+	@echo "  make clean           - Clean build artifacts"
+	@echo "  make help            - Show this help"

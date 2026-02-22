@@ -1,0 +1,171 @@
+Performance Benchmark Results - Sun Feb 22 00:15:08 MST 2026
+==========================================
+
+Light-Load Test: 500 requests/sec
+Duration: 20 seconds
+Total: 10,000 requests
+
+
+Summary:
+  Count:	10000
+  Total:	20.00 s
+  Slowest:	49.14 ms
+  Fastest:	0.64 ms
+  Average:	1.42 ms
+  Requests/sec:	499.95
+
+Response time histogram:
+  0.638  [1]    |
+  5.489  [9809] |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  10.339 [91]   |
+  15.190 [35]   |
+  20.041 [21]   |
+  24.891 [24]   |
+  29.742 [8]    |
+  34.592 [3]    |
+  39.443 [2]    |
+  44.294 [3]    |
+  49.144 [3]    |
+
+Latency distribution:
+  10 % in 0.84 ms 
+  25 % in 0.95 ms 
+  50 % in 1.10 ms 
+  75 % in 1.29 ms 
+  90 % in 1.58 ms 
+  95 % in 2.05 ms 
+  99 % in 10.17 ms 
+
+Status code distribution:
+  [OK]   10000 responses   
+
+
+
+Light-Load Test Completed
+
+Medium-Load Test: 2000 requests/sec
+Duration: 20 seconds
+Total: 40,000 requests
+
+
+Summary:
+  Count:	40000
+  Total:	20.00 s
+  Slowest:	40.34 ms
+  Fastest:	0.47 ms
+  Average:	1.06 ms
+  Requests/sec:	1999.72
+
+Response time histogram:
+  0.473  [1]     |
+  4.460  [39589] |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  8.446  [222]   |
+  12.433 [96]    |
+  16.420 [37]    |
+  20.406 [36]    |
+  24.393 [12]    |
+  28.380 [4]     |
+  32.367 [1]     |
+  36.353 [0]     |
+  40.340 [2]     |
+
+Latency distribution:
+  10 % in 0.73 ms 
+  25 % in 0.81 ms 
+  50 % in 0.92 ms 
+  75 % in 1.06 ms 
+  90 % in 1.24 ms 
+  95 % in 1.47 ms 
+  99 % in 4.56 ms 
+
+Status code distribution:
+  [OK]   40000 responses   
+
+
+
+Medium-Load Test Completed
+
+Heavy-Load Test: 3,000 requests/sec
+Duration: 20 seconds
+Total: 60,000 requests
+
+
+Summary:
+  Count:	60000
+  Total:	20.00 s
+  Slowest:	36.84 ms
+  Fastest:	0.44 ms
+  Average:	1.09 ms
+  Requests/sec:	2999.70
+
+Response time histogram:
+  0.443  [1]     |
+  4.083  [59439] |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  7.723  [228]   |
+  11.363 [58]    |
+  15.002 [98]    |
+  18.642 [35]    |
+  22.282 [33]    |
+  25.922 [54]    |
+  29.562 [25]    |
+  33.201 [13]    |
+  36.841 [16]    |
+
+Latency distribution:
+  10 % in 0.71 ms 
+  25 % in 0.80 ms 
+  50 % in 0.92 ms 
+  75 % in 1.08 ms 
+  90 % in 1.29 ms 
+  95 % in 1.51 ms 
+  99 % in 3.83 ms 
+
+Status code distribution:
+  [OK]   60000 responses   
+
+
+
+Heavy-Load Test Completed
+
+Stress Test
+Duration: 30 seconds
+Total: 15,000 requests/sec
+
+
+Summary:
+  Count:	450000
+  Total:	30.02 s
+  Slowest:	143.35 ms
+  Fastest:	0.37 ms
+  Average:	5.50 ms
+  Requests/sec:	14990.37
+
+Response time histogram:
+  0.374   [1]      |
+  14.671  [409642] |∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎
+  28.969  [27751]  |∎∎∎
+  43.266  [7115]   |∎
+  57.564  [3414]   |
+  71.861  [1459]   |
+  86.159  [433]    |
+  100.456 [112]    |
+  114.753 [19]     |
+  129.051 [32]     |
+  143.348 [22]     |
+
+Latency distribution:
+  10 % in 1.00 ms 
+  25 % in 1.26 ms 
+  50 % in 2.01 ms 
+  75 % in 5.89 ms 
+  90 % in 13.69 ms 
+  95 % in 20.99 ms 
+  99 % in 47.20 ms 
+
+Status code distribution:
+  [OK]   450000 responses   
+
+
+
+Stress Test Completed
+
