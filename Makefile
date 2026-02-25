@@ -171,3 +171,33 @@ help:
 	@echo "  make fmt             - Format code"
 	@echo "  make clean           - Clean build artifacts"
 	@echo "  make help            - Show this help"
+
+# Kubernetes commands
+.PHONY: k8s-deploy k8s-delete k8s-status k8s-logs k8s-scale k9s-ui
+
+k8s-deploy:
+	@./scripts/k8s-deploy.sh
+
+k8s-delete:
+	kubectl delete namespace ratelimiter
+	@echo "Kubernetes resources deleted"
+
+k8s-status:
+	@echo "=== Pods ==="
+	@kubectl get pods -n ratelimiter
+	@echo ""
+	@echo "=== Services ==="
+	@kubectl get svc -n ratelimiter
+	@echo ""
+	@echo "=== HPA ==="
+	@kubectl get hpa -n ratelimiter
+
+k8s-logs:
+	kubectl logs -n ratelimiter -l app=ratelimiter --tail=50 -f
+
+k8s-scale:
+	kubectl scale deployment ratelimiter -n ratelimiter --replicas=5
+	@echo "Scaled to 5 replicas"
+
+k9s-ui:
+	k9s -n ratelimiter
