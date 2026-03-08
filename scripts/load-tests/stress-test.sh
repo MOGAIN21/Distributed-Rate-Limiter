@@ -10,8 +10,8 @@ ghz --insecure \
     --call ratelimiter.RateLimiter/CheckLimit \
     -d '{"client_id": "load-test-{{.RequestNumber}}", "tokens_requested": 1}' \
     -c 300 \
-    -n 450000 \
     --rps 15000 \
+    --duation 60s \
     localhost:50051
 
 echo ""

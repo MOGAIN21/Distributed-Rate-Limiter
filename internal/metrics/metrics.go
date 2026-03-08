@@ -12,7 +12,7 @@ var (
 		Name: "rate_limiter_request_total",
 		Help: "Total number of requests received by the rate limiter",
 	},
-	[]string{"client_id", "allowed"},
+	[]string{"allowed"},
 	)
 
 	//RateLimit Hits
@@ -31,12 +31,12 @@ var (
 	)
 
 	//Token bucket metrics
-	TokenBucketSize = promauto.NewGaugeVec(
-	prometheus.GaugeOpts{
+	TokenBucketSize = promauto.NewHistogram(
+	prometheus.HistogramOpts{
 		Name: "rate_limiter_token_bucket_size",
-		Help: "Current size of the token bucket for each client",
+		Help: "Distribution of the token bucket sizes for each client",
+		Buckets: []float64{0,10,25,50,75,100},
 	},
-	[]string{"client_id"},
 	)
 
 	//Request duration histogram

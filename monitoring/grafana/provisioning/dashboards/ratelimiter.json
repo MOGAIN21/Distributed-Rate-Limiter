@@ -9,8 +9,8 @@
                 "gridPos":{"h":8,"w":12,"x":0,"y":0},
                 "targets":[
                     {
-                        "expr": "rate(rate_limiter_requests_total[1m])",
-                        "legendFormat": "{{client_id}} - {{allowed}}"
+                        "expr": "rate(rate_limiter_request_total[1m])",
+                        "legendFormat": "{{allowed}}"
                 }
              ]
     } ,
@@ -21,7 +21,7 @@
         "gridPos":{"h":4,"w":6,"x":12,"y":0},
         "targets":[
             {
-                "expr": "ratelimiter_rate_limit_hits_total"
+                "expr": "rate_limiter_hits_total"
             }
         ]
     },
@@ -32,7 +32,7 @@
         "gridPos":{"h":4,"w":6,"x":18,"y":0},
         "targets":[
             {
-                "expr": "ratelimiter_active_clients"
+                "expr": "rate_limiter_active_clients"
             }
          ]
     },
@@ -43,7 +43,7 @@
         "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
         "targets": [
             {
-                "expr": "histogram_quantile(0.95, sum(rate(ratelimiter_request_duration_seconds_bucket[5m]))",
+                "expr": "histogram_quantile(0.95, sum by (le,method) (rate(rate_limiter_request_duration_seconds_bucket[5m]))",
                 "legendFormat": "{{method}}"
             }
         ]

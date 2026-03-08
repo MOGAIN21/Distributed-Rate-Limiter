@@ -61,8 +61,8 @@ func (s *server) CheckLimit(ctx context.Context, req *pb.CheckLimitRequest) (*pb
 		metrics.RateLimitHitsTotal.Inc()
 	}
 
-	metrics.RequestTotal.WithLabelValues(req.ClientId, fmt.Sprintf("%t", allowed)).Inc()
-	metrics.TokenBucketSize.WithLabelValues(req.ClientId).Set(float64(remaining))
+	metrics.RequestTotal.WithLabelValues(fmt.Sprintf("%t", allowed)).Inc()
+	metrics.TokenBucketSize.Observe(float64(remaining))
 	
 	response := &pb.CheckLimitResponse{
 		Allowed:      allowed,
