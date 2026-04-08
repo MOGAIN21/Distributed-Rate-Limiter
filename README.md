@@ -401,11 +401,7 @@ Built using:
 - Prometheus and Grafana for monitoring
 - Docker and Kubernetes for containerization
 
-## Contact
 
-**Author**: MKR-24  
-**Repository**: https://github.com/MKR-24/distributed-rate-limiter  
-**Issues**: https://github.com/MKR-24/distributed-rate-limiter/issues
 
 ---
 
